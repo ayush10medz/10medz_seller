@@ -79,18 +79,6 @@ const columns = [
   {
     Header: "Remark",
     accessor: "remark",
-    // Cell: ({ value }) => {
-    //   value ? (
-    //     <button
-    //       onClick={setIsRemarkOpen(true)}
-    //       className="px-4 py-2 bg-blue-600 text-white rounded-md"
-    //     >
-    //       Open Remarks
-    //     </button>
-    //   ) : (
-    //     ""
-    //   ),
-    // }
   },
 ];
 
@@ -314,12 +302,7 @@ const AdminOrders = () => {
                   <option value="Confirm Order">Confirm Order</option>
                   <option value="Out For Delivery">Out For Delivery</option>
                   <option value="Delivered">Delivered</option>
-                  <option
-                    value="Cancelled
-                  "
-                  >
-                    Cancelled
-                  </option>
+                  <option value="Cancelled">Cancelled</option>
                 </select>
               </div>
               <div className="mb-4">
