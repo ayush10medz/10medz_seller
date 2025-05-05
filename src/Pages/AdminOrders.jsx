@@ -79,6 +79,18 @@ const columns = [
   {
     Header: "Remark",
     accessor: "remark",
+    Cell: ({ value }) => {
+      value ? (
+        <button
+          onClick={() => {}}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md"
+        >
+          Open Remarks
+        </button>
+      ) : (
+        "-"
+      ),
+    }
   },
 ];
 
@@ -234,7 +246,7 @@ const AdminOrders = () => {
                       className="px-6 py-4 font-normal"
                       onClick={(e) => {
                         if (cell?.column?.id === "remark") {
-                          e.preventDefault();
+                          e.stopPropagation();
                           openRemarkModal(row.original);
                         }
                       }}
