@@ -345,7 +345,7 @@ const AdminOrders = () => {
 
         {isRemarkOpen && (
           <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
-            <div className="bg-white rounded-lg p-6 w-[400px]">
+            <div className="bg-white rounded-lg p-6 w-[70vw]">
               <h2 className="text-xl font-semibold mb-4">Remarked Order</h2>
 
               {(() => {
