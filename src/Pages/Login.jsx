@@ -1,12 +1,12 @@
 import axios from "axios";
-import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
+import Cookies from "js-cookie";
 import OtpInput from "otp-input-react";
-import React, { startTransition, useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { CgSpinner } from "react-icons/cg";
+import { FaXmark } from "react-icons/fa6";
 import plus from "../Assets/Images/3dicons.png";
 import logo from "../Assets/Images/logo.png";
-import { auth } from "../firebase";
 import { HandleContext } from "../hooks/HandleState";
 
 const Login = () => {
@@ -14,59 +14,28 @@ const Login = () => {
   const [loading, setLoading] = useState(false); //loading
   const [otp, setOtp] = useState(""); //this save otp
   const [phoneNumber, setPhoneNumber] = useState(""); //this save number of user
-  const [recaptchaVerifier, setRecaptchaVerifier] = useState("");
-  const [confirmationResult, setConfirmationResult] = useState(null);
+  const { openLogin, setOpenWapper, setOpenLogin, handleSellerProfile } = useContext(HandleContext);
   const server = process.env.REACT_APP_API_URL;
-  const { handleSellerProfile } = useContext(HandleContext);
-
-  useEffect(() => {
-    const recaptchaVerifier = new RecaptchaVerifier(
-      auth,
-      "recaptcha-container",
-      {
-        size: "invisible",
-      }
-    );
-    setRecaptchaVerifier(recaptchaVerifier);
-
-    return () => {
-      recaptchaVerifier.clear();
-    };
-  }, [auth]);
 
   const requestOtp = async (e) => {
     e.preventDefault();
-    setLoading(true); // Start loading state
+    setLoading(true);
 
     try {
-      if (!recaptchaVerifier) {
-        setLoading(false);
-        return toast.error("RecaptchaVerifier is not initialized");
-      }
-      const formatphone = "+91" + phoneNumber;
-      const confirmationResult = await signInWithPhoneNumber(
-        auth,
-        formatphone,
-        recaptchaVerifier
+      const { data } = await axios.post(
+        `${server}/api/v1/otp/send`,
+        {
+          mobileNumber: phoneNumber,
+        }
       );
-      console.log(confirmationResult);
-      setConfirmationResult(confirmationResult);
-      setNumberSection(false);
 
-      toast.success("OTP sent successfully");
+      if (data.success) {
+        toast.success(data.message);
+        setNumberSection(false);
+      }
     } catch (error) {
       console.error(error);
-      if (error.code === "auth/invalid-phone-number") {
-        toast.error(
-          "Invalid phone number. Please check the format and try again."
-        );
-      } else if (error.code === "auth/too-many-requests") {
-        toast.error("Too many requests. Please try again later.");
-      } else if (error.code === "auth/billing-not-enabled") {
-        toast.error("Billing is not enabled for phone authentication.");
-      } else {
-        toast.error("An error occurred. Please try again.");
-      }
+      toast.error(error?.response?.data?.message || "An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -81,24 +50,33 @@ const Login = () => {
 
   const verifyOtp = async () => {
     setLoading(true);
-    startTransition(async () => {
-      if (!confirmationResult) {
-        toast.error("Please request OTP first");
-        return;
-      }
+    try {
+      const { data } = await axios.post(
+        `${server}/api/v1/otp/verify`,
+        {
+          mobileNumber: phoneNumber,
+          otp: otp,
+        }
+      );
 
-      try {
-        await confirmationResult?.confirm(otp);
+      if (data.success) {
+        // Store the token in cookies
+        Cookies.set("token", data.token, {
+          expires: 7, // 7 days
+          secure: true,
+          sameSite: "strict"
+        });
+        toast.success(data.message);
         setNumberSection(true);
         login();
-        setLoading(false);
-      } catch (error) {
-        console.log(error);
-        toast.error("Failed to verify OTP. Please check the OTP.");
-        setOtp("");
-        setLoading(false);
       }
-    });
+    } catch (error) {
+      console.error(error);
+      toast.error(error?.response?.data?.message || "Failed to verify OTP. Please check the OTP.");
+      setOtp("");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const login = async () => {
@@ -106,6 +84,7 @@ const Login = () => {
       withCredentials: true,
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${Cookies.get("token")}`,
       },
     };
     try {
@@ -121,7 +100,8 @@ const Login = () => {
       setPhoneNumber("");
       setOtp("");
       handleSellerProfile();
-      console.log(data);
+      setOpenLogin(false);
+      setOpenWapper(false);
     } catch (error) {
       toast.error(error?.response?.data?.message || "Something went wrong");
     }
@@ -137,7 +117,6 @@ const Login = () => {
         setCounter(counter - 1);
       }, 1000);
 
-    // Enable button after timer ends
     if (counter === 0) {
       setIsButtonDisabled(false);
     }
@@ -145,27 +124,47 @@ const Login = () => {
     return () => clearInterval(timer);
   }, [counter]);
 
-  const handleResendOtp = () => {
-    // Logic to resend OTP
-    console.log("OTP Resent");
+  const handleResendOtp = async () => {
+    setLoading(true);
+    try {
+      const { data } = await axios.post(
+        `${server}/api/v1/otp/resend`,
+        {
+          mobileNumber: phoneNumber,
+        }
+      );
 
-    // Restart the timer
-    setCounter(60);
-    setIsButtonDisabled(true);
+      if (data.success) {
+        toast.success(data.message);
+        setCounter(60);
+        setIsButtonDisabled(true);
+      }
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Failed to resend OTP");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div
-      className={` z-[1000] fixed  duration-300 ease-in-out top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-5 py-7 bg-white rounded-xl w-[400px] h-auto flex flex-col items-start justify-start  gap-20`}
+      className={`${openLogin ? "scale-[100%]" : "scale-[0%]"} z-[1000] fixed duration-300 ease-in-out top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-5 py-7 bg-white rounded-xl w-[400px] h-auto flex flex-col items-start justify-start gap-20`}
       style={{ boxShadow: "0px 0px 17px 6px rgba(0, 0, 0, 0.25)" }}
     >
       <img
         src={plus}
-        className="absolute top-1/2 left-1/2  -translate-x-1/2 -translate-y-1/2 opacity-40 -z-10 "
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-40 -z-10"
         alt="plus icon"
       />
       <div className="flex flex-col items-start w-full gap-5 justify-center">
-        <div className="absolute hidden" id="recaptcha-container"></div>
+        <FaXmark
+          onClick={(e) => {
+            e.preventDefault();
+            setOpenLogin(false);
+            setOpenWapper(false);
+          }}
+          className="text-[20px] self-end cursor-pointer"
+        />
         <div className="flex flex-col items-start justify-start">
           <img src={logo} alt="logo" />
           {numbersection ? (
