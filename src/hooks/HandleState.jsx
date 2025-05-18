@@ -1,6 +1,7 @@
 import axios from "axios";
 import { createContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import Cookies from "js-cookie";
 
 export const HandleContext = createContext();
 
@@ -19,6 +20,7 @@ const HandleState = ({ children }) => {
         withCredentials: true,
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
         },
       };
 
@@ -45,6 +47,7 @@ const HandleState = ({ children }) => {
         withCredentials: true,
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
         },
       };
       const response = await axios.get(
@@ -67,6 +70,7 @@ const HandleState = ({ children }) => {
         withCredentials: true,
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
         },
       };
       const { data } = await axios.get(
@@ -85,6 +89,7 @@ const HandleState = ({ children }) => {
         withCredentials: true,
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
         },
       };
       const { data } = await axios.get(
