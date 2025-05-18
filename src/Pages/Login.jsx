@@ -147,8 +147,9 @@ const Login = () => {
   };
 
   return (
+    // ${openLogin ? "scale-[100%]" : "scale-[0%]"}
     <div
-      className={`${openLogin ? "scale-[100%]" : "scale-[0%]"} z-[1000] fixed duration-300 ease-in-out top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-5 py-7 bg-white rounded-xl w-[400px] h-auto flex flex-col items-start justify-start gap-20`}
+      className={`z-[1000] fixed duration-300 ease-in-out top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-5 py-7 bg-white rounded-xl w-[400px] h-auto flex flex-col items-start justify-start gap-20`}
       style={{ boxShadow: "0px 0px 17px 6px rgba(0, 0, 0, 0.25)" }}
     >
       <img
