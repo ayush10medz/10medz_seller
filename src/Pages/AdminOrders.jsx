@@ -4,6 +4,7 @@ import Sidemenu from "../components/Shared/Sidemenu";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { HandleContext } from "../hooks/HandleState";
+import { SocketContext } from "../hooks/SoketProvider";
 const server = process.env.REACT_APP_API_URL;
 
 const columns = [
@@ -83,7 +84,7 @@ const columns = [
       if (value) {
         return (
           <button
-            onClick={() => {}}
+            onClick={() => { }}
             className="px-4 py-2 bg-blue-600 text-white rounded-md"
           >
             Open Remarks
@@ -96,7 +97,8 @@ const columns = [
 ];
 
 const AdminOrders = () => {
-  const { handleAllOrder, order, setOrder } = useContext(HandleContext);
+  const { handleAllOrder, order, setOrder, } = useContext(HandleContext);
+  const { newOrderId, setNewOrderId } = useContext(SocketContext);
   useEffect(() => {
     handleAllOrder();
   }, []);
@@ -169,10 +171,10 @@ const AdminOrders = () => {
       const updatedOrders = order.map((ord) =>
         ord._id === selectedOrder._id
           ? {
-              ...ord,
-              ...formValues,
-              billLink: file ? URL.createObjectURL(file) : ord.billLink,
-            }
+            ...ord,
+            ...formValues,
+            billLink: file ? URL.createObjectURL(file) : ord.billLink,
+          }
           : ord
       );
       setOrder(updatedOrders);
@@ -206,6 +208,16 @@ const AdminOrders = () => {
     usePagination
   );
 
+  // Effect to clear the new order highlight after a few seconds
+  useEffect(() => {
+    if (newOrderId) {
+      const timer = setTimeout(() => {
+        setNewOrderId(null);
+      }, 5000); // Highlight for 5 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [newOrderId, setNewOrderId]);
+
   return (
     <main className="w-[100vw] flex flex-row items-start justify-start">
       <Sidemenu />
@@ -238,7 +250,13 @@ const AdminOrders = () => {
               return (
                 <tr
                   {...row.getRowProps()}
-                  className="border-b transition duration-300 ease-in-out hover:bg-[#FE6903] hover:text-white cursor-pointer"
+                  className={
+                    `border-b transition duration-300 ease-in-out cursor-pointer
+                    hover:bg-[#FE6903] hover:text-white`
+                  }
+                  style={{
+                    backgroundColor: row.original._id === newOrderId ? '#e6ffe6' : ''
+                  }}
                   onClick={() => openModal(row.original)}
                 >
                   {row?.cells.map((cell) => (
@@ -416,11 +434,10 @@ const AdminOrders = () => {
                                 {med.quantity || "-"}
                               </td>
                               <td
-                                className={`p-2 border text-center ${
-                                  med.availableInStock
-                                    ? "text-green-600"
-                                    : "text-red-500"
-                                }`}
+                                className={`p-2 border text-center ${med.availableInStock
+                                  ? "text-green-600"
+                                  : "text-red-500"
+                                  }`}
                               >
                                 {med.availableInStock ? "Yes" : "No"}
                               </td>
@@ -428,8 +445,8 @@ const AdminOrders = () => {
                                 {med.netPrice && med.netPrice !== "N/A"
                                   ? `₹${med.netPrice}`
                                   : med.price && med.price !== "N/A"
-                                  ? `₹${med.price}`
-                                  : "-"}
+                                    ? `₹${med.price}`
+                                    : "-"}
                               </td>
                             </tr>
                           ))}

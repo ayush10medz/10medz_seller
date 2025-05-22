@@ -1,7 +1,8 @@
-import { createContext, useContext, useEffect, useMemo } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { io } from "socket.io-client";
 import { toast } from "react-hot-toast";
 import { HandleContext } from "./HandleState";
+import Cookies from "js-cookie";
 import {
   CUSTOMER_COMFORMATION,
   CUSTOMER_COMFORMED,
@@ -12,20 +13,27 @@ const server = process.env.REACT_APP_API_URL;
 export const SocketContext = createContext();
 
 const SocketProvider = ({ children }) => {
-  const { order, setOrder } = useContext(HandleContext);
+  const { order, setOrder, sellerExist, handleAllOrder } = useContext(HandleContext);
+  const [newOrderId, setNewOrderId] = useState(null); // State to signal new order for highlighting
   // Initialize socket only if the server URL is defined
   const socket = useMemo(() => {
-    if (!server) {
-      console.error("Socket server URL is not defined");
+    const token = Cookies.get("token");
+    if (!server || !sellerExist || !token) {
+      console.error("Socket server URL is not defined or user not authenticated");
       return null;
     }
-    return io(server, { withCredentials: true });
-  }, [server]);
+    return io(server, {
+      withCredentials: true,
+      auth: {
+        token: token,
+      },
+    });
+  }, [server, sellerExist]);
 
   useEffect(() => {
     if (!socket) return; // Exit if socket is not initialized
 
-    socket.on("connect", () => {});
+    socket.on("connect", () => { });
 
     socket.on("connect_error", (error) => {
       toast.error("Connection error:", error);
@@ -52,9 +60,17 @@ const SocketProvider = ({ children }) => {
   };
 
   useEffect(() => {
+    if (!socket) return; // Ensure socket is initialized before adding listeners
     socket.on(NEW_ORDER, (data) => {
       setOrder((order) => [data, ...order]);
-      toast.success("New Order");   
+      toast.success("New Order");
+      // Play notification sound
+      const audio = new Audio('/sounds/new_order.mp3'); // Assuming you have a sound file at public/sounds/new_order.mp3
+      audio.play().catch(error => console.error("Error playing sound:", error));
+      // Signal new order for highlighting
+      setNewOrderId(data._id);
+      // Optionally refetch all orders to ensure consistent state if needed
+      // handleAllOrder();
     });
 
     socket.on(CUSTOMER_COMFORMED, (data) => {
@@ -68,11 +84,15 @@ const SocketProvider = ({ children }) => {
       socket.off(NEW_ORDER);
       socket.off(CUSTOMER_COMFORMED);
     };
-  }, []); // Empty dependency array means this effect runs once on mount
+  }, [socket, handleUpdateOrder, setOrder]); // Add socket, handleUpdateOrder, and setOrder to dependencies
 
 
   return (
-    <SocketContext.Provider value={{ socket }}>
+    <SocketContext.Provider value={{
+      socket,
+      newOrderId,
+      setNewOrderId,
+    }}>
       {children}
     </SocketContext.Provider>
   );
