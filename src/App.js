@@ -13,7 +13,6 @@ const SellerDashBoard = lazy(() => import("./Pages/SellerDashBoard"));
 
 function App() {
   const { sellerExist } = useContext(HandleContext);
-  console.log(sellerExist);
 
   return (
     <>

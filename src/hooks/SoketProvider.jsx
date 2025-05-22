@@ -74,7 +74,6 @@ const SocketProvider = ({ children }) => {
     });
 
     socket.on(CUSTOMER_COMFORMED, (data) => {
-      console.log(data);
       handleUpdateOrder(data);
       // toast.success("order updated!");
     });

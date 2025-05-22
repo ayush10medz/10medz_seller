@@ -11,7 +11,6 @@ const HandleState = ({ children }) => {
   const [sellerExist, setSellerExist] = useState(false);
   const [sellerOrder, setSellerOrder] = useState([]);
   const [order, setOrder] = useState([]);
-  console.log(order);
 
   const handleSellerLogout = async () => {
     const toastId = toast.loading("Logging out...");
@@ -55,7 +54,6 @@ const HandleState = ({ children }) => {
         config
       );
       if (response.data.success) {
-        console.log(response.data);
         setSellerExist(true);
       }
     } catch (error) {
@@ -77,7 +75,6 @@ const HandleState = ({ children }) => {
         `${server}/api/v1/seller/sellermyorder`,
         config
       ); // Ensure the route is correct
-      console.log(data);
       setSellerOrder(data.transformedSellerOrder);
     } catch (error) {
       console.error("Error fetching orders:", error);
@@ -96,7 +93,6 @@ const HandleState = ({ children }) => {
         `${server}/api/v1/seller/sellerallorder`,
         config
       ); // Ensure the route is correct
-      console.log(data);
       setOrder(data.transformedAllOrder.reverse());
     } catch (error) {
       console.error("Error fetching orders:", error);
