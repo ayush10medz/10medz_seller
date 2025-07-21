@@ -80,6 +80,10 @@ const HandleState = ({ children }) => {
       console.error("Error fetching orders:", error);
     }
   };
+  // TODO
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
   const handleAllOrder = async () => {
     try {
       const config = {
@@ -93,6 +97,8 @@ const HandleState = ({ children }) => {
         `${server}/api/v1/seller/sellerallorder`,
         config
       ); // Ensure the route is correct
+      // TODO
+      await sleep(2500);
       setOrder(data.transformedAllOrder.reverse());
     } catch (error) {
       console.error("Error fetching orders:", error);
