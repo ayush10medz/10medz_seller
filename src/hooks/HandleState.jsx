@@ -98,7 +98,7 @@ const HandleState = ({ children }) => {
         config
       ); // Ensure the route is correct
       // TODO
-      await sleep(2500);
+      await sleep(4000);
       setOrder(data.transformedAllOrder.reverse());
     } catch (error) {
       console.error("Error fetching orders:", error);
