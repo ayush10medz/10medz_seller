@@ -3,14 +3,14 @@
 @tailwind utilities;
 
 /* TODO */
-*,
+/* *,
 *::before,
 *::after {
   transition-duration: 2s !important;
   animation-duration: 2s !important;
   animation-delay: 1s !important;
   transition-delay: 1s !important;
-}
+} */
 
 body {
   width: 100vw;

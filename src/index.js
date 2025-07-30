@@ -11,7 +11,7 @@ root.render(
   <BrowserRouter>
     <HandleState>
       {/* TODO */}
-      {/* <App /> */}
+      <App />
     </HandleState>
   </BrowserRouter>
   // </React.StrictMode>
